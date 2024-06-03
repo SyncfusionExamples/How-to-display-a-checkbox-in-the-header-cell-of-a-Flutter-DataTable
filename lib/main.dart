@@ -1,16 +1,50 @@
-## How to display a checkbox in the header cell of a Flutter DataTable?
+import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-In this article, we will show you how to display a checkbox in the header cell of a [Flutter DataTable](https://www.syncfusion.com/flutter-widgets/flutter-datagrid).
+void main() {
+  runApp(const MyApp());
+}
 
-Initialize the [SfDataGrid](https://pub.dev/documentation/syncfusion_flutter_datagrid/latest/datagrid/SfDataGrid-class.html) widget with all the necessary properties. Achieve this by loading the [checkbox](https://api.flutter.dev/flutter/material/Checkbox-class.html) widget as a child within the designated [GridColumn](https://pub.dev/documentation/syncfusion_flutter_datagrid/latest/datagrid/GridColumn-class.html). Initialize a map collection to track the state of each checkbox. The keys should correspond to the column names, and the values should represent whether the checkbox is checked or not. In the [onChanged](https://api.flutter.dev/flutter/material/Checkbox/onChanged.html) callback of each checkbox, update the state of the corresponding checkbox in the map using setState, and perform your desired action. Then, retrieve the names of the checked columns using the map collection.
+/// The application that contains datagrid on it.
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-```dart
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Syncfusion DataGrid Demo',
+      theme: ThemeData(useMaterial3: false),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+/// The home page of the application which hosts the datagrid.
+class MyHomePage extends StatefulWidget {
+  /// Creates the home page.
+  const MyHomePage({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  List<Employee> employees = <Employee>[];
+  late EmployeeDataSource employeeDataSource;
   Map<String, bool> checkedColumns = {
     'id': false,
     'name': false,
     'designation': false,
     'salary': false,
   };
+
+  @override
+  void initState() {
+    super.initState();
+    employees = getEmployeeData();
+    employeeDataSource = EmployeeDataSource(employeeData: employees);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +61,7 @@ Initialize the [SfDataGrid](https://pub.dev/documentation/syncfusion_flutter_dat
                     .where((entry) => entry.value)
                     .map((entry) => entry.key)
                     .toList();
+                print('Checked column names: $checkedColumnNames');
               },
               child: const Text('Checked column')),
           Expanded(
@@ -124,6 +159,72 @@ Initialize the [SfDataGrid](https://pub.dev/documentation/syncfusion_flutter_dat
       ),
     );
   }
-```
 
-You can download this example on [GitHub](https://github.com/SyncfusionExamples/How-to-display-a-checkbox-in-the-header-cell-of-a-Flutter-DataTable).
+  List<Employee> getEmployeeData() {
+    return [
+      Employee(10001, 'James', 'Project Lead', 20000),
+      Employee(10002, 'Kathryn', 'Manager', 30000),
+      Employee(10003, 'Lara', 'Developer', 15000),
+      Employee(10004, 'Michael', 'Designer', 15000),
+      Employee(10005, 'Martin', 'Developer', 15000),
+      Employee(10006, 'Newberry', 'Developer', 15000),
+      Employee(10007, 'Balnc', 'Developer', 15000),
+      Employee(10008, 'Perry', 'Developer', 15000),
+      Employee(10009, 'Gable', 'Developer', 15000),
+      Employee(10010, 'Grimes', 'Developer', 15000)
+    ];
+  }
+}
+
+/// Custom business object class which contains properties to hold the detailed
+/// information about the employee which will be rendered in datagrid.
+class Employee {
+  /// Creates the employee class with required details.
+  Employee(this.id, this.name, this.designation, this.salary);
+
+  /// Id of an employee.
+  final int id;
+
+  /// Name of an employee.
+  final String name;
+
+  /// Designation of an employee.
+  final String designation;
+
+  /// Salary of an employee.
+  final int salary;
+}
+
+/// An object to set the employee collection data source to the datagrid. This
+/// is used to map the employee data to the datagrid widget.
+class EmployeeDataSource extends DataGridSource {
+  /// Creates the employee data source class with required details.
+  EmployeeDataSource({required List<Employee> employeeData}) {
+    _employeeData = employeeData
+        .map<DataGridRow>((e) => DataGridRow(cells: [
+              DataGridCell<int>(columnName: 'id', value: e.id),
+              DataGridCell<String>(columnName: 'name', value: e.name),
+              DataGridCell<String>(
+                  columnName: 'designation', value: e.designation),
+              DataGridCell<int>(columnName: 'salary', value: e.salary),
+            ]))
+        .toList();
+  }
+
+  List<DataGridRow> _employeeData = [];
+
+  @override
+  List<DataGridRow> get rows => _employeeData;
+
+  @override
+  DataGridRowAdapter buildRow(DataGridRow row) {
+    return DataGridRowAdapter(
+        cells: row.getCells().map<Widget>((e) {
+      return Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(8.0),
+        child: Text(e.value.toString()),
+      );
+    }).toList());
+  }
+}
